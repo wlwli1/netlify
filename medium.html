@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinPop - Medium Feed</title>
+    <meta name="description" content="CoinPop Medium Blog Insights">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #242424;
+            --text-sub: #6b6b6b;
+            --accent: #1a8917; /* Medium Green */
+            --font-serif: 'Merriweather', serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-serif); /* 본문은 세리프 */
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 레이아웃 */
+        .container {
+            max-width: 680px; /* 미디엄 표준 너비 */
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        /* 헤더 섹션 */
+        header {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #f2f2f2;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-text h1 {
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 32px;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .header-text p {
+            font-family: var(--font-sans);
+            color: var(--text-sub);
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+
+        /* 게시글 리스트 */
+        .feed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        .article-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: opacity 0.2s;
+        }
+        .article-card:hover { opacity: 0.85; }
+
+        .meta-info {
+            font-family: var(--font-sans);
+            font-size: 13px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .article-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.3;
+            color: var(--text-main);
+        }
+        .article-title a { text-decoration: none; color: inherit; }
+
+        .article-excerpt {
+            font-size: 16px;
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin: 0;
+            
+            /* 3줄 말줄임 */
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-top: 12px;
+            background-color: #f9f9f9;
+            display: none; /* 이미지가 없으면 숨김 */
+        }
+        .article-image.show { display: block; }
+
+        .read-more {
+            font-family: var(--font-sans);
+            font-size: 14px;
+            color: var(--accent);
+            text-decoration: none;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* 로딩 및 에러 상태 */
+        #loading {
+            text-align: center;
+            padding: 40px;
+            font-family: var(--font-sans);
+            color: var(--text-sub);
+        }
+
+        .error-msg {
+            text-align: center;
+            padding: 30px;
+            background: #fafafa;
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            color: var(--text-sub);
+        }
+        .btn-retry {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #000;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* 푸터 */
+        footer {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 1px solid #f2f2f2;
+            text-align: center;
+            font-family: var(--font-sans);
+            font-size: 13px;
+            color: #ccc;
+        }
+        footer a { color: #999; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div id="avatar-container"></div>
+        <div class="header-text">
+            <h1>CoinPop Medium</h1>
+            <p>Crypto Insights & Blockchain Analysis</p>
+        </div>
+    </header>
+
+    <div id="feed-container">
+        <div id="loading">Loading stories...</div>
+    </div>
+
+    <footer>
+        <p>Curated by <a href="https://coinpop.wordpress.com" target="_blank">CoinPop Official</a></p>
+    </footer>
+</div>
+
+<script>
+    // ✅ 설정: RSS URL
+    const rssUrl = 'https://medium.com/feed/@winnerss';
+    
+    // ✅ rss2json API 사용 (가장 안정적인 RSS 변환 서비스)
+    // RSS XML 데이터를 JSON으로 바꿔주며 CORS 문제도 해결해줍니다.
+    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+    async function loadMediumFeed() {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error('API Response Failed');
+            
+            const data = await response.json();
+            
+            // 상태가 ok가 아니면 에러 처리
+            if (data.status !== 'ok') throw new Error('Feed Status Not OK');
+
+            renderFeed(data);
+
+        } catch (error) {
+            console.error('Feed Load Error:', error);
+            showFallback();
+        }
+    }
+
+    function renderFeed(data) {
+        const container = document.getElementById('feed-container');
+        const avatarContainer = document.getElementById('avatar-container');
+        
+        // 1. 프로필 이미지 업데이트
+        if (data.feed && data.feed.image) {
+            avatarContainer.innerHTML = `<img src="${data.feed.image}" class="avatar" alt="Profile">`;
+        } else {
+            // 이미지가 없으면 기본 아이콘
+            avatarContainer.innerHTML = `<div class="avatar" style="background:#eee;"></div>`;
+        }
+
+        // 2. 게시글 리스트 렌더링
+        const items = data.items;
+        let html = '<div class="feed-list">';
+
+        items.forEach(item => {
+            // 날짜 변환
+            const date = new Date(item.pubDate).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            // 본문 텍스트 요약 (HTML 태그 제거)
+            let cleanText = item.description.replace(/<[^>]*>?/gm, '');
+            let excerpt = cleanText.length > 180 ? cleanText.substring(0, 180) + '...' : cleanText;
+
+            // 썸네일 이미지 추출 (description 안의 img 태그 찾기)
+            let imgHtml = '';
+            // rss2json은 thumbnail 필드를 제공하기도 함
+            let imgUrl = item.thumbnail; 
+            
+            // 만약 thumbnail 필드가 없으면 본문에서 추출
+            if (!imgUrl) {
+                const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch) imgUrl = imgMatch[1];
+            }
+
+            if (imgUrl) {
+                imgHtml = `<a href="${item.link}" target="_blank"><img src="${imgUrl}" class="article-image show" loading="lazy" alt="Cover"></a>`;
+            }
+
+            html += `
+                <article class="article-card">
+                    <div class="meta-info">
+                        <span>${date}</span>
+                        <span>•</span>
+                        <span>${item.author}</span>
+                    </div>
+                    <h2 class="article-title">
+                        <a href="${item.link}" target="_blank">${item.title}</a>
+                    </h2>
+                    ${imgHtml}
+                    <p class="article-excerpt">${excerpt}</p>
+                    <a href="${item.link}" target="_blank" class="read-more">Read story →</a>
+                </article>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // 에러 발생 시 보여줄 화면 (버튼형)
+    function showFallback() {
+        const container = document.getElementById('feed-container');
+        container.innerHTML = `
+            <div class="error-msg">
+                <h3>Read on Medium</h3>
+                <p>Unable to load the feed right now.<br>Visit our Medium page directly.</p>
+                <a href="https://medium.com/@winnerss" target="_blank" class="btn-retry">Go to Medium</a>
+            </div>
+        `;
+    }
+
+    // 실행
+    loadMediumFeed();
+
+</script>
+
+</body>
+</html>
