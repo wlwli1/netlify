@@ -177,7 +177,7 @@
 
 <script>
     // 1. 네이버 블로그 RSS 주소
-    const rssUrl = 'https://rss.blog.naver.com/kj1nhon9o114.xml';
+    const rssUrl = 'https://rss.blog.naver.com/kj1nhon9o114.xml?rss=1.0';
     
     // 2. rss2json API 사용 (CORS 해결 및 JSON 변환)
     const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
@@ -246,4 +246,5 @@
 </script>
 
 </body>
+
 </html>
