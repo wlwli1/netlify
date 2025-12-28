@@ -1,6 +1,12 @@
-# [build] 부분은 삭제했습니다. (기본 폴더를 쓰므로 필요 없음)
+# netlify.toml
 
 [[redirects]]
   from = "/naver/rss"
   to = "/.netlify/functions/rss"
+  status = 200
+
+# [추가됨] 중계자 주소 연결
+[[redirects]]
+  from = "/go"
+  to = "/.netlify/functions/go"
   status = 200
