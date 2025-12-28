@@ -2,5 +2,5 @@
 
 [[redirects]]
   from = "/naver/rss"
-  to = "/.functions/rss"
+  to = "/.netlify/functions/rss"
   status = 200
