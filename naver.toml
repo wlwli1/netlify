@@ -1,6 +1,8 @@
-# netlify.toml
+[build]
+  functions = "functions"  # 👈 "내 소스 폴더는 루트의 functions야"라고 선언
 
+# 2. 리다이렉트 설정 (주소 연결)
 [[redirects]]
   from = "/naver/rss"
-  to = "/.netlify/functions/rss"
+  to = "/.netlify/functions/rss"  # 👈 도착지는 무조건 /.netlify/functions/로 시작해야 함 (규칙임)
   status = 200
